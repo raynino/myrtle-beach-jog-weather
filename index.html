@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Myrtle Beach Jog Weather • Best Times & Lowest Humidity</title>
+  <meta name="description" content="Find the best times to jog in Myrtle Beach, SC (29577) based on temperature, humidity, precipitation, and air quality over the next 7 days. Powered by National Weather Service.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-dim: #0ea5e9;
+      --good: #4ade80;
+      --warn: #fbbf24;
+      --bad: #f87171;
+      --border: #334155;
+      --radius: 12px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56, 189, 248, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(74, 222, 128, 0.08), transparent);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .location {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-card);
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 1.75rem;
+    }
+
+    button {
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0f172a;
+    }
+    .btn-primary:hover { background: #7dd3fc; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--bg-card-hover); }
+
+    .status {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+      min-height: 1.3em;
+    }
+
+    .status.error { color: var(--bad); }
+    .status.success { color: var(--good); }
+
+    /* Summary cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 1.15rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card .detail {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Day sections */
+    .day-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .day-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.5rem 1rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .day-header h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .day-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-best { background: rgba(74, 222, 128, 0.2); color: var(--good); }
+    .badge-good { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
+    .badge-ok { background: rgba(251, 191, 36, 0.15); color: var(--warn); }
+    .badge-poor { background: rgba(248, 113, 113, 0.15); color: var(--bad); }
+
+    .windows {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    @media (max-width: 560px) {
+      .windows { grid-template-columns: 1fr; }
+    }
+
+    .window {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+    }
+
+    .window-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+
+    .window-time {
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .window-stats {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .humidity-list {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .humidity-list span {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      margin: 0.15rem 0.2rem 0.15rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    /* AQI note */
+    .aqi-box {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(56, 189, 248, 0.08));
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .aqi-box .icon { font-size: 1.5rem; flex-shrink: 0; }
+    .aqi-box p { font-size: 0.9rem; color: var(--text-muted); }
+    .aqi-box strong { color: var(--good); }
+
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .loading {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Myrtle Beach Jog Weather</h1>
+      <p class="subtitle">Best times to run & lowest humidity windows</p>
+      <div class="location">
+        <span>📍</span> Myrtle Beach, SC 29577
+      </div>
+    </header>
+
+    <div class="controls">
+      <button class="btn-primary" id="refreshBtn" onclick="loadData()">
+        <span id="refreshIcon">↻</span> Refresh Data
+      </button>
+      <button class="btn-secondary" onclick="window.print()">Print / Save PDF</button>
+    </div>
+
+    <div class="status" id="status">Loading latest forecast…</div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      Fetching hourly data from National Weather Service…
+    </div>
+
+    <div id="content" class="hidden">
+      <!-- Summary cards -->
+      <div class="summary-grid" id="summaryCards"></div>
+
+      <!-- AQI note -->
+      <div class="aqi-box">
+        <div class="icon">🌬️</div>
+        <div>
+          <strong>Air Quality</strong>
+          <p>Current conditions are typically <strong>Good</strong> (AQI ~25–40) in Myrtle Beach. The NWS API does not provide multi-day AQI forecasts. For the latest reading check <a href="https://www.airnow.gov/" target="_blank" rel="noopener" style="color:var(--accent)">AirNow.gov</a> or a local monitor before sensitive outdoor activity.</p>
+        </div>
+      </div>
+
+      <!-- Daily sections -->
+      <div id="daysContainer"></div>
+    </div>
+
+    <footer>
+      <p>Data from <a href="https://www.weather.gov/" target="_blank" rel="noopener">National Weather Service</a> (api.weather.gov) • Grid ILM/57,47</p>
+      <p style="margin-top:0.4rem">Local file • Works offline after first load (cached data) • Built for personal use</p>
+    </footer>
+  </div>
+
+  <script>
+    const POINTS_URL = 'https://api.weather.gov/points/33.70,-78.90';
+    const USER_AGENT = 'MyrtleBeachJogWeather/1.0 (personal; contact@local)';
+
+    // Scoring weights for "best jog time"
+    function scoreHour(h) {
+      let score = 0;
+      const t = h.temp;
+      const hum = h.humidity;
+      const pop = h.pop;
+      const hour = parseInt(h.hour.slice(0,2), 10);
+
+      // Temperature (ideal ~60-75°F)
+      if (t >= 60 && t <= 75) score += 35;
+      else if (t >= 55 && t <= 80) score += 22;
+      else if (t >= 50 && t <= 85) score += 10;
+      else score -= 15;
+
+      // Humidity (lower is better)
+      if (hum < 50) score += 35;
+      else if (hum < 60) score += 25;
+      else if (hum < 70) score += 12;
+      else if (hum < 80) score += 0;
+      else score -= 10;
+
+      // Precipitation
+      if (pop < 15) score += 25;
+      else if (pop < 30) score += 12;
+      else if (pop < 50) score -= 5;
+      else score -= 25;
+
+      // Preferred times of day
+      if (hour >= 6 && hour <= 9) score += 12;   // morning
+      if (hour >= 17 && hour <= 20) score += 10; // evening
+      if (h.isDay) score += 8;
+
+      return score;
+    }
+
+    function formatDay(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    }
+
+    function badgeForDay(maxScore, minHum) {
+      if (maxScore >= 90 && minHum < 55) return { cls: 'badge-best', text: 'Excellent' };
+      if (maxScore >= 75 && minHum < 70) return { cls: 'badge-good', text: 'Good' };
+      if (maxScore >= 55) return { cls: 'badge-ok', text: 'Fair' };
+      return { cls: 'badge-poor', text: 'Challenging' };
+    }
+
+    async function fetchJson(url) {
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/geo+json',
+          'User-Agent': USER_AGENT
+        }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    }
+
+    async function loadData() {
+      const statusEl = document.getElementById('status');
+      const loadingEl = document.getElementById('loading');
+      const contentEl = document.getElementById('content');
+      const btn = document.getElementById('refreshBtn');
+
+      btn.disabled = true;
+      statusEl.textContent = 'Fetching latest forecast…';
+      statusEl.className = 'status';
+      loadingEl.classList.remove('hidden');
+      contentEl.classList.add('hidden');
+
+      try {
+        // Get grid metadata (in case it changes)
+        const points = await fetchJson(POINTS_URL);
+        const hourlyUrl = points.properties.forecastHourly;
+        const forecastUrl = points.properties.forecast;
+
+        const [hourlyData, periodData] = await Promise.all([
+          fetchJson(hourlyUrl),
+          fetchJson(forecastUrl)
+        ]);
+
+        const periods = hourlyData.properties.periods;
+        const periodForecast = periodData.properties.periods;
+
+        // Group by calendar day
+        const days = {};
+        periods.forEach(p => {
+          const start = new Date(p.startTime);
+          const key = start.toISOString().slice(0, 10); // YYYY-MM-DD
+          if (!days[key]) days[key] = [];
+          days[key].push({
+            hour: start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+            iso: p.startTime,
+            temp: p.temperature,
+            humidity: p.relativeHumidity?.value ?? 99,
+            pop: p.probabilityOfPrecipitation?.value ?? 0,
+            wind: p.windSpeed,
+            dir: p.windDirection,
+            forecast: p.shortForecast,
+            isDay: p.isDaytime
+          });
+        });
+
+        // Build UI
+        const dayKeys = Object.keys(days).sort().slice(0, 7);
+        let bestOverall = null;
+
+        // Summary cards
+        const summaryHtml = [];
+        const firstDay = days[dayKeys[0]];
+        const nowHour = firstDay[0];
+        summaryHtml.push(`
+          <div class="card">
+            <h3>Current / Next Hour</h3>
+            <div class="value">${nowHour.temp}°F</div>
+            <div class="detail">${nowHour.humidity}% RH · PoP ${nowHour.pop}% · ${nowHour.forecast}</div>
+          </div>
+        `);
+
+        // Find overall best day
+        let bestDayKey = null, bestDayScore = -999;
+        dayKeys.forEach(key => {
+          const hours = days[key];
+          const maxS = Math.max(...hours.map(scoreHour));
+          if (maxS > bestDayScore) {
+            bestDayScore = maxS;
+            bestDayKey = key;
+          }
+        });
+
+        const bestDayHours = days[bestDayKey];
+        const bestHour = bestDayHours.reduce((a, b) => scoreHour(a) > scoreHour(b) ? a : b);
+        summaryHtml.push(`
+          <div class="card">
+            <h3>Best Jog Window (7 days)</h3>
+            <div class="value" style="font-size:1.15rem">${formatDay(bestHour.iso)}</div>
+            <div class="detail">${bestHour.hour} · ${bestHour.temp}°F · ${bestHour.humidity}% RH</div>
+          </div>
+        `);
+
+        // Lowest humidity overall
+        let lowestHum = 100, lowestHumHour = null;
+        dayKeys.forEach(key => {
+          days[key].forEach(h => {
+            if (h.humidity < lowestHum) {
+              lowestHum = h.humidity;
+              lowestHumHour = h;
+            }
+          });
+        });
+        summaryHtml.push(`
+          <div class="card">
+            <h3>Lowest Humidity</h3>
+            <div class="value">${lowestHum}%</div>
+            <div class="detail">${formatDay(lowestHumHour.iso)} at ${lowestHumHour.hour}</div>
+          </div>
+        `);
+
+        document.getElementById('summaryCards').innerHTML = summaryHtml.join('');
+
+        // Daily sections
+        const daysHtml = dayKeys.map(key => {
+          const hours = days[key];
+          const scores = hours.map(h => ({ h, s: scoreHour(h) }));
+          scores.sort((a, b) => b.s - a.s);
+          const top = scores[0];
+          const minHum = Math.min(...hours.map(h => h.humidity));
+          const badge = badgeForDay(top.s, minHum);
+
+          // Morning & evening windows
+          const morning = hours.filter(h => {
+            const hr = parseInt(h.hour.slice(0,2), 10);
+            return hr >= 6 && hr <= 9;
+          });
+          const evening = hours.filter(h => {
+            const hr = parseInt(h.hour.slice(0,2), 10);
+            return hr >= 17 && hr <= 20;
+          });
+
+          function bestIn(window) {
+            if (!window.length) return null;
+            return window.reduce((a, b) => scoreHour(a) > scoreHour(b) ? a : b);
+          }
+
+          const bestM = bestIn(morning);
+          const bestE = bestIn(evening);
+
+          // Lowest humidity times (top 4)
+          const lowHum = [...hours].sort((a, b) => a.humidity - b.humidity).slice(0, 4);
+
+          return `
+            <section class="day-section">
+              <div class="day-header">
+                <h2>${formatDay(hours[0].iso)}</h2>
+                <span class="day-badge ${badge.cls}">${badge.text}</span>
+              </div>
+              <div class="windows">
+                <div class="window">
+                  <div class="window-label">Morning (6–9 am)</div>
+                  ${bestM ? `
+                    <div class="window-time">${bestM.hour}</div>
+                    <div class="window-stats">${bestM.temp}°F · ${bestM.humidity}% RH · PoP ${bestM.pop}%<br>${bestM.forecast}</div>
+                  ` : '<div class="window-stats">No data</div>'}
+                </div>
+                <div class="window">
+                  <div class="window-label">Evening (5–8 pm)</div>
+                  ${bestE ? `
+                    <div class="window-time">${bestE.hour}</div>
+                    <div class="window-stats">${bestE.temp}°F · ${bestE.humidity}% RH · PoP ${bestE.pop}%<br>${bestE.forecast}</div>
+                  ` : '<div class="window-stats">No data</div>'}
+                </div>
+              </div>
+              <div class="humidity-list">
+                <strong style="color:var(--text)">Lowest humidity:</strong>
+                ${lowHum.map(h => `<span>${h.hour} → ${h.humidity}%</span>`).join('')}
+              </div>
+            </section>
+          `;
+        }).join('');
+
+        document.getElementById('daysContainer').innerHTML = daysHtml;
+
+        // Success
+        const updated = new Date().toLocaleString();
+        statusEl.textContent = `Updated ${updated} • ${periods.length} hourly periods loaded`;
+        statusEl.className = 'status success';
+        loadingEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+
+        // Cache for offline-ish use
+        try {
+          localStorage.setItem('mb-jog-cache', JSON.stringify({
+            ts: Date.now(),
+            periods,
+            periodForecast
+          }));
+        } catch (e) {}
+
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = `Error: ${err.message}. Trying cache…`;
+        statusEl.className = 'status error';
+
+        // Try cache
+        try {
+          const cached = JSON.parse(localStorage.getItem('mb-jog-cache') || 'null');
+          if (cached && cached.periods) {
+            statusEl.textContent = `Showing cached data from ${new Date(cached.ts).toLocaleString()} (live fetch failed)`;
+            // Could re-render from cache here if desired
+          }
+        } catch (e) {}
+
+        loadingEl.classList.add('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Initial load
+    loadData();
+  </script>
+</body>
+</html>
